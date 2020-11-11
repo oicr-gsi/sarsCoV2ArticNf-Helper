@@ -75,29 +75,25 @@ for x in range(0, len(kraken2ReportLines)):
     elif (kraken2ReportLines[x].split()[3] == 'S') and (kraken2ReportLines[x].split()[5] == 'Homo'):
         humanPct = float(kraken2ReportLines[x].split()[0])
 
-data["QC Stats"] = {}
+data["QCStats"] = {}
 for x in range(0,8):
-    data["QC Stats"][qcStatsHeadings[x]] = qcStatsValues[x]
+    data["QCStats"][qcStatsHeadings[x]] = qcStatsValues[x]
     if (x == 1) or (x == 2):
-        data["QC Stats"][qcStatsHeadings[x]] = float(qcStatsValues[x])
+        data["QCStats"][qcStatsHeadings[x]] = float(qcStatsValues[x])
     elif (x==3) or (x==4):
-        data["QC Stats"][qcStatsHeadings[x]] = int(qcStatsValues[x])
+        data["QCStats"][qcStatsHeadings[x]] = int(qcStatsValues[x])
 
 vcfLines = len(vcfFileLines)
 
+data["TaxonomicClassification"] = {}
+data["TaxonomicClassification"]["Reads"] = totalKraken
+data["TaxonomicClassification"]["UnclassifiedReads"] = unclassifiedReads
+data["TaxonomicClassification"]["Unclassified"] = unclassifiedPct
+data["TaxonomicClassification"]["SevereAcuteRespiratorySyndromeRelatedCoronavirus"] = sarsPct
+data["TaxonomicClassification"]["SevereAcuteRespiratorySyndromeCoronavirus2"] = sars2Pct
+data["TaxonomicClassification"]["Homosapiens"] = humanPct
 
-
-
-
-data["Taxonomic Classification"] = {}
-data["Taxonomic Classification"]["Reads"] = totalKraken
-data["Taxonomic Classification"]["UnclassifiedReads"] = unclassifiedReads
-data["Taxonomic Classification"]["Unclassified"] = unclassifiedPct
-data["Taxonomic Classification"]["SevereAcuteRespiratorySyndromeRelatedCoronavirus"] = sarsPct
-data["Taxonomic Classification"]["SevereAcuteRespiratorySyndromeCoronavirus2"] = sars2Pct
-data["Taxonomic Classification"]["Homosapiens"] = humanPct
-
-data["Variant Detection"] = {}
+data["VariantDetection"] = {}
 
 for y in range(0, vcfLines):
     for d in range(0,12):
@@ -107,26 +103,26 @@ for y in range(0, vcfLines):
             alt = int(dp4[2]) + int(dp4[3])
             break
 
-    data["Variant Detection"]["Variant_" + str(y+1)] = {}
-    data["Variant Detection"]["Variant_" + str(y+1)]["POS"] = int(vcfFileLines[y].split()[1])
-    data["Variant Detection"]["Variant_" + str(y+1)]["VAF"] = round(float(alt / (ref + alt)), 2)
-    data["Variant Detection"]["Variant_" + str(y+1)]["DEPTH"] = ref + alt
-    data["Variant Detection"]["Variant_" + str(y + 1)]["REF"] = vcfFileLines[y].split()[3]
-    data["Variant Detection"]["Variant_" + str(y + 1)]["REFCOUNT"] = ref
-    data["Variant Detection"]["Variant_" + str(y + 1)]["ALTCOUNT"] = alt
-    data["Variant Detection"]["Variant_" + str(y + 1)]["ALT"] = vcfFileLines[y].split()[4]
+    data["VariantDetection"]["Variant_" + str(y+1)] = {}
+    data["VariantDetection"]["Variant_" + str(y+1)]["POS"] = int(vcfFileLines[y].split()[1])
+    data["VariantDetection"]["Variant_" + str(y+1)]["VAF"] = round(float(alt / (ref + alt)), 2)
+    data["VariantDetection"]["Variant_" + str(y+1)]["DEPTH"] = ref + alt
+    data["VariantDetection"]["Variant_" + str(y + 1)]["REF"] = vcfFileLines[y].split()[3]
+    data["VariantDetection"]["Variant_" + str(y + 1)]["REFCOUNT"] = ref
+    data["VariantDetection"]["Variant_" + str(y + 1)]["ALTCOUNT"] = alt
+    data["VariantDetection"]["Variant_" + str(y + 1)]["ALT"] = vcfFileLines[y].split()[4]
 
 
 
-data["Sequencing Stats"] = {}
-data["Sequencing Stats"]["TotalReads"] = int(totalReads[3])
-data["Sequencing Stats"]["HostDepletedReads"] = (int(totalReads[3]) - int(hostMappedReads[2]))
-data["Sequencing Stats"]["HostMappedReads"] = int(hostMappedReads[2])
-data["Sequencing Stats"]["MappedTrimmedReads"] = int(mappedTrimmedReads[2])
-data["Sequencing Stats"]["MeanCoverage"] = round(meanCvg, 2)
-data["Sequencing Stats"]["MeanReadLength"] = float(meanLengthRead[2])
-data["Sequencing Stats"]["MeanInsertSize"] = float(meanInsertSize[3])
-data["Sequencing Stats"]["InsertSizeSD"] = float(insertSizeSD[4])
+data["SequencingStats"] = {}
+data["SequencingStats"]["TotalReads"] = int(totalReads[3])
+data["SequencingStats"]["HostDepletedReads"] = (int(totalReads[3]) - int(hostMappedReads[2]))
+data["SequencingStats"]["HostMappedReads"] = int(hostMappedReads[2])
+data["SequencingStats"]["MappedTrimmedReads"] = int(mappedTrimmedReads[2])
+data["SequencingStats"]["MeanCoverage"] = round(meanCvg, 2)
+data["SequencingStats"]["MeanReadLength"] = float(meanLengthRead[2])
+data["SequencingStats"]["MeanInsertSize"] = float(meanInsertSize[3])
+data["SequencingStats"]["InsertSizeSD"] = float(insertSizeSD[4])
 
 
 
