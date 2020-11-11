@@ -105,12 +105,13 @@ for y in range(0, vcfLines):
 
     data["VariantDetection"]["Variant_" + str(y+1)] = {}
     data["VariantDetection"]["Variant_" + str(y+1)]["POS"] = int(vcfFileLines[y].split()[1])
-    data["VariantDetection"]["Variant_" + str(y+1)]["VAF"] = round(float(alt / (ref + alt)), 2)
-    data["VariantDetection"]["Variant_" + str(y+1)]["DEPTH"] = ref + alt
     data["VariantDetection"]["Variant_" + str(y + 1)]["REF"] = vcfFileLines[y].split()[3]
+    data["VariantDetection"]["Variant_" + str(y + 1)]["ALT"] = vcfFileLines[y].split()[4]
+    data["VariantDetection"]["Variant_" + str(y + 1)]["DEPTH"] = ref + alt
     data["VariantDetection"]["Variant_" + str(y + 1)]["REFCOUNT"] = ref
     data["VariantDetection"]["Variant_" + str(y + 1)]["ALTCOUNT"] = alt
-    data["VariantDetection"]["Variant_" + str(y + 1)]["ALT"] = vcfFileLines[y].split()[4]
+    data["VariantDetection"]["Variant_" + str(y + 1)]["VAF"] = round(float(alt / (ref + alt)), 2)
+
 
 
 
