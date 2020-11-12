@@ -87,11 +87,12 @@ vcfLines = len(vcfFileLines)
 
 data["TaxonomicClassification"] = {}
 data["TaxonomicClassification"]["Reads"] = totalKraken
-data["TaxonomicClassification"]["Unclassified"] = unclassifiedPct
+data["TaxonomicClassification"]["Unclassified reads"] = unclassifiedReads
+data["TaxonomicClassification"]["Unclassified percent"] = unclassifiedPct
 data["TaxonomicClassification"]["Severe acute respiratory syndrome-related coronavirus"] = sarsPct
 data["TaxonomicClassification"]["Severe acute respiratory syndrome coronavirus 2"] = sars2Pct
 data["TaxonomicClassification"]["Homo sapiens"] = humanPct
-data["TaxonomicClassification"]["Unclassified Reads"] = unclassifiedReads
+
 
 data["VariantDetection"] = {}
 
