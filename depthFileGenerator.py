@@ -18,8 +18,8 @@ with open('depth.txt', 'w', newline='') as f_output:
 
 for y in range(0, vcfLines):
     for d in range(0,12):
-        if ((vcfFileLines[y].split()[7].split(";")[d][:3]) == "DP4"):
-            dp4 = (((((vcfFileLines[y].split())[7]).split(";")[d])[4:]).split(","))
+        if ((vcfFileLines[y+1].split()[7].split(";")[d][:3]) == "DP4"):
+            dp4 = (((((vcfFileLines[y+1].split())[7]).split(";")[d])[4:]).split(","))
             ref = (int(dp4[0])) + (int(dp4[1]))
             alt = int(dp4[2]) + int(dp4[3])
             pos = int(vcfFileLines[y].split()[1])
@@ -27,7 +27,7 @@ for y in range(0, vcfLines):
             if (ref == 0) and (alt == 0):
                 altPct = 0.0
             else:
-                altPct = float(alt / depth)
+                altPct = round(float(alt / depth), 3)
             line = [pos, depth, ref, alt, altPct]
             with open('depth.txt', 'a', newline='') as file_output:
                 tsv_output = csv.writer(file_output, delimiter='\t')
