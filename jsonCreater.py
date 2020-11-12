@@ -91,7 +91,7 @@ data["TaxonomicClassification"]["Unclassified"] = unclassifiedPct
 data["TaxonomicClassification"]["Severe acute respiratory syndrome-related coronavirus"] = sarsPct
 data["TaxonomicClassification"]["Severe acute respiratory syndrome coronavirus 2"] = sars2Pct
 data["TaxonomicClassification"]["Homo sapiens"] = humanPct
-data["TaxonomicClassification"]["Unclassifed Reads"] = unclassifiedReads
+data["TaxonomicClassification"]["Unclassified Reads"] = unclassifiedReads
 
 data["VariantDetection"] = {}
 
