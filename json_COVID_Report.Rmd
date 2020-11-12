@@ -1,0 +1,164 @@
+---
+title: "SARS-CoV-2: Sequence Analysis Report"
+subtitle: "Genomics Program, Ontario Institute of Cancer Research"
+author: "For research use only"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: pdf_document
+params:
+  json: ""
+  perbasefile: ""
+  histfile: ""
+  sample: ""
+  library: ""
+  ext: ""
+  run: ""
+  refname: ""
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.pos= "H")
+
+library(rjson)
+jfile<-params$json
+info<-fromJSON(file=jfile)
+
+```
+
+\fontfamily{lmr}\selectfont
+
+OICR Sample: **`r params$sample`**
+\newline
+OICR Library: **`r params$library`**
+\newline
+External Name: **`r params$ext`**
+\newline
+Sequencer Run: **`r params$run`**
+\newline
+Reference Genome: **`r params$refname`**
+\newline
+
+## \textcolor{blue}{1. Taxonomic Classification }
+Table below shows the Kraken taxonomic information for the analyzed sample:
+
+``` {r ksummary, echo=FALSE, warning=FALSE}
+library(rjson)
+library(knitr)
+library(kableExtra)
+
+
+get_summary_table<-function(s){
+  summary<-as.data.frame(unlist(s))
+  s_data<-summary[c("Reads","Unclassified reads", "Unclassified percent","Severe acute respiratory syndrome-related coronavirus","Severe acute respiratory syndrome coronavirus 2","Homo sapiens"),,drop=F]
+
+  s.df<-data.frame(V1=rownames(s_data),V2=s_data[,1])
+  return(s.df)
+}
+
+summary_table<-get_summary_table(info$TaxonomicClassification)
+kable(summary_table, col.names = NULL, row.names = FALSE, "latex", booktabs = T)
+
+```
+
+##  \textcolor{blue}{2. Variant Detection}
+###  \textcolor{black}{2.1 Variant Table}
+
+Variation from the reference genome (MN9089470.3) was investigated using bcftools 
+\newline 
+
+``` {r mut_summary, message=FALSE, echo=FALSE, warning=FALSE}
+library(knitr)
+library(kableExtra)
+library(rjson)
+library(dplyr)
+variants <- bind_rows(info$Variant, .id = 'Variant_')
+variants <- mutate_if(variants, is.character, type.convert, as.is = TRUE)
+variants<-variants[-1]
+kable(variants[1:7],"latex", booktabs = T)
+```
+
+###  \textcolor{black}{2.2 Sequence Summary, ( high quality bases, >Q13)}
+
+```{r coverage,echo=FALSE, out.width = '65%'}
+#fn=paste(params$data_dir,info$Plots$Coverage, sep="")
+#knitr::include_graphics(fn)
+```
+
+
+## \textcolor{blue}{3. Sequencing Stats}
+Table below shows the run summary information for the analyzed sample:
+\newline 
+
+``` {r summary, echo=FALSE, warning=FALSE}
+library(rjson)
+library(knitr)
+library(kableExtra)
+
+get_summary_table<-function(s){
+  summary<-as.data.frame(unlist(s))
+  s_data<-summary[c("TotalReads", "HostDepletedReads", "HostMappedReads", "MappedTrimmedReads", "MeanCoverage", "MeanReadLength", "MeanInsertSize", "InsertSizeSD"),,drop=F]
+  s.df<-data.frame(V1=rownames(s_data),V2=s_data[,1])
+ 
+  return(s.df)
+}
+
+summary_table<-get_summary_table(info$SequencingStats)
+kable(summary_table, col.names = NULL, row.names = FALSE,  "latex", booktabs = T)
+```
+
+##  \textcolor{blue}{4. Raw Sequencing Depth across the viral genome}
+
+```{r basedepth, message=FALSE, warning=FALSE, echo=FALSE, out.width = '75%'}
+library(ggplot2)
+
+fpath=params$perbasefile
+pb<-read.delim(file=fpath,sep='\t',header=F,as.is=T)
+colnames(pb)<-c("ref","base","depth")
+pb$id<-info$Stats$Library
+
+mean_coverage<-round(mean(pb$depth),2) 
+title<-"Raw Depth by Position"
+subtitle<-paste("sample=",pb$id," mean coverage=",mean_coverage)
+ggplot(pb,aes(x=base,y=depth)) + geom_bar(stat="identity") + geom_hline(yintercept=mean_coverage,col="red",linetype="dashed") +
+  labs(x="base position",y="depth of coverage")
+
+```
+
+##  \textcolor{blue}{5. Coverage By Interval}
+
+```{r coveragebyinterval, echo=FALSE, out.width = '75%'}
+
+library(ggplot2)
+library(reshape2)
+
+fpath<-params$histfile
+hist<-read.delim(file=fpath,sep='\t',header=F,as.is=T)
+hist<-hist[hist$V1!="all",]
+colnames(hist)[(ncol(hist)-3):ncol(hist)]<-c("depth","bases","size","proportion")
+hist$name<-hist$V4
+intervals<-unique(hist$name)
+hist$interval<-paste(hist$V1,":",hist$V2,"-",hist$V3,sep="")
+hist<-hist[,c("name","depth","bases","size","proportion","interval")]
+hist$id<-info$Stats$Library
+
+int.mean_coverage.by<-by(hist,hist$name,function(x){sum(x$depth*x$bases)/as.numeric(x$size[1])})
+interval.stats<-data.frame(interval=names(int.mean_coverage.by),mean_coverage=as.vector(int.mean_coverage.by),row.names=names(int.mean_coverage.by))
+  ### reorder the levels
+interval.stats$interval<-factor(interval.stats$interval,levels=intervals)
+interval.stats$percent_uncovered<-0
+
+hist0<-hist[hist$depth==0,c("name","bases","size"),drop=F]
+hist0$proportion<-hist0$bases/hist0$size
+interval.stats[hist0$name,]$percent_uncovered<-hist0$proportion
+
+title<-"mean coverage by interval"
+subtitle<-paste("sample:",hist$id) #" target space:",target_id)  ## " overall mean coverage=",mean_coverage,sep="")
+m<-melt(interval.stats,id.vars=c("interval"),measure.vars=c("mean_coverage","percent_uncovered"),variable.name="metric",value.name="value")
+ggplot(m,aes(x=interval,y=value)) + geom_bar(stat="identity") + facet_wrap(~metric,nrow=2,scales="free_y") +
+    #theme(axis.text.x = element_text(angle = 90)) +
+    theme(axis.text.x=element_blank()) +
+    labs(x="interval",y="mean coverage")
+
+
+```
+
+
