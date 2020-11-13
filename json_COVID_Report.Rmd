@@ -8,6 +8,7 @@ params:
   json: ""
   perbasefile: ""
   histfile: ""
+  depthfile: ""
   sample: ""
   library: ""
   ext: ""
@@ -79,8 +80,19 @@ kable(variants[1:7],"latex", booktabs = T)
 ###  \textcolor{black}{2.2 Sequence Summary, ( high quality bases, >Q13)}
 
 ```{r coverage,echo=FALSE, out.width = '65%'}
-#fn=paste(params$data_dir,info$Plots$Coverage, sep="")
-#knitr::include_graphics(fn)
+library(ggplot2)
+library(ggpubr)
+
+fpath<-params$depthfile
+theme_set(theme_pubr())
+plotgraph<-read.delim(file=fpath,sep='\t',header=T,as.is=T)
+#read.table(params$depthfile, header=TRUE, sep="\t")
+a<-ggplot(plotgraph, aes(x = Position, y = Depth, group=1)) + geom_line() + labs(title="Coverage") + ylab("Depth")
+b<-ggplot(plotgraph, aes(x = Position, y = AltPercent, group=1)) + geom_line() + labs(title="ALT Percent Rate")+ scale_y_continuous(limits = c(0, 100))
+figure <- ggarrange(a, b,
+                    labels = c("A", "B"),
+                    ncol = 1, nrow = 2)
+figure
 ```
 
 
@@ -160,5 +172,4 @@ ggplot(m,aes(x=interval,y=value)) + geom_bar(stat="identity") + facet_wrap(~metr
 
 
 ```
-
 
